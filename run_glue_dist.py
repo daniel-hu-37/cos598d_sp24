@@ -221,10 +221,9 @@ def train(args, train_dataset, model, tokenizer):
                 loss.backward()
                 i = 0
                 for param in model.parameters():
-                    input_tensor = param.grad
                     if dist.get_rank() == 0:
                         gather_list = [
-                            torch.zeros_like(input_tensor)
+                            torch.zeros_like(param.grad)
                             for _ in range(dist.get_world_size())
                         ]
                         # aggregated_grads = torch.mean(torch.stack(gather_list), dim=0)
@@ -235,9 +234,9 @@ def train(args, train_dataset, model, tokenizer):
                         gather_list = None
                         # scatter_list = None
                         # aggregated_grads = torch.zeros_like(input_tensor)
-                    dist.gather(input_tensor, gather_list=gather_list, dst=0)
+                    dist.gather(param.grad, gather_list=gather_list, dst=0)
                     if i < 2:
-                        print(input_tensor)
+                        print(param.grad)
                     i += 1
 
                     # if dist.get_rank() == 0:

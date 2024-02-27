@@ -15,7 +15,7 @@ def main():
     print("Torch Distributed Available: ", torch.distributed.is_available())
     print()
 
-    init_ranks = [("tcp://10.10.1.1:9000", 0)]
+    init_ranks = [("tcp://10.10.1.1:9001", 0)]
 
     for init, rank in init_ranks:
         try:

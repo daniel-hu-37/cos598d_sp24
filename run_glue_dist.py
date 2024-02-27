@@ -219,9 +219,17 @@ def train(args, train_dataset, model, tokenizer):
                 ##################################################
                 # TODO(cos598d): perform backward pass here
                 loss.backward()
-
                 local = model.parameters()
+                named = model.named_parameters()
+
+                print()
+                print()
                 print(local)
+                print()
+                print()
+                print(named)
+                print()
+                print()
 
                 if dist.get_rank() == 0:
                     gathered = torch.zeros(dist.get_world_size(), dtype=torch.float32)

@@ -88,7 +88,7 @@ def init_process(rank, ip, port, size):
     print()
     torch.distributed.init_process_group(
         backend="gloo",
-        init_method="tcp://" + ip + ":" + port,
+        init_method="tcp://" + ip + ":" + str(port),
         timeout=None,
         world_size=size,
         rank=rank,

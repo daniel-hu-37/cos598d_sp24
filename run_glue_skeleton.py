@@ -26,16 +26,16 @@ import random
 import numpy as np
 import torch
 
-# torch.distributed.init_process_group(
-#     backend="gloo",
-#     init_method="tcp://10.10.1.1:1600",
-#     timeout=None,
-#     world_size=4,
-#     rank=0,
-#     store=None,
-#     group_name="",
-#     pg_options=None,
-# )
+torch.distributed.init_process_group(
+    backend="gloo",
+    init_method="tcp://10.10.1.1:1600",
+    timeout=None,
+    world_size=4,
+    rank=0,
+    store=None,
+    group_name="",
+    pg_options=None,
+)
 
 
 from torch.utils.data import DataLoader, RandomSampler, SequentialSampler, TensorDataset

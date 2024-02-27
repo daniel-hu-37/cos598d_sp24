@@ -619,7 +619,6 @@ def main():
     )
     args.n_gpu = torch.cuda.device_count()
 
-    torch.cuda.set_device(args.local_rank)
     init_process(args.local_rank, args.master_ip, args.master_port, args.world_size)
 
     # Setup logging

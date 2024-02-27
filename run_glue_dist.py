@@ -25,6 +25,7 @@ import random
 
 import numpy as np
 import torch
+import torch.distributed as dist
 
 
 from torch.utils.data import DataLoader, RandomSampler, SequentialSampler, TensorDataset
@@ -213,6 +214,21 @@ def train(args, train_dataset, model, tokenizer):
                 ##################################################
                 # TODO(cos598d): perform backward pass here
                 loss.backward()
+
+                local = model.parameters().grad
+
+                if dist.get_rank() == 0:
+                    gathered = torch.zeros(dist.get_world_size(), dtype=torch.float32)
+                else:
+                    gathered = torch.tensor([], dtype=torch.float32)
+
+                dist.gather(local, gathered, dst=0)  # gather
+
+                if dist.get_rank() == 0:
+                    total_sum = gathered.mean()
+                    print("Total sum:", total_sum)
+
+                dist.scatter(gathered, gathered, src=0)  # scatter
 
                 ##################################################
                 torch.nn.utils.clip_grad_norm_(model.parameters(), args.max_grad_norm)

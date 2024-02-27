@@ -10,7 +10,7 @@ python3 run_glue_dist.py \
   --local_rank 0\
   --data_dir $GLUE_DIR/$TASK_NAME \
   --max_seq_length 128 \
-  --per_gpu_train_batch_size 64 \
+  --per_gpu_train_batch_size 16 \
   --learning_rate 2e-5 \
   --num_train_epochs 3 \
   --output_dir /tmp/$TASK_NAME/ \

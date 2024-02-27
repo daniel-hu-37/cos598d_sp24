@@ -35,6 +35,7 @@ import torch.distributed as dist
 
 from torch.utils.data import DataLoader, RandomSampler, SequentialSampler, TensorDataset
 from torch.utils.data.distributed import DistributedSampler
+from torch.nn.parallel import DistributedDataParallel as DDP
 from tqdm import tqdm, trange
 
 # import a previous version of the HuggingFace Transformers package
@@ -635,14 +636,14 @@ def main():
             )
         )
 
-    init_process(args.local_rank, args.master_ip, args.master_port, args.world_size)
-    print(torch.distributed.get_rank())
-
     # set up (distributed) training
     args.device = torch.device(
         "cuda" if torch.cuda.is_available() and not args.no_cuda else "cpu"
     )
     args.n_gpu = torch.cuda.device_count()
+
+    torch.cuda.set_device(args.local_rank)
+    init_process(args.local_rank, args.master_ip, args.master_port, args.world_size)
 
     # Setup logging
     logging.basicConfig(
@@ -690,6 +691,7 @@ def main():
     # TODO(cos598d): load the model using from_pretrained. Remember to pass in `config` as an argument.
     # If you pass in args.model_name_or_path (e.g. "bert-base-cased"), the model weights file will be downloaded from HuggingFace.
     model = model_class.from_pretrained(args.model_name_or_path, config=config)
+    model = DDP(model, device_ids=[args.local_rank], output_device=args.local_rank)
 
     ##################################################
 

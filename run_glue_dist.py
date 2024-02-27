@@ -230,28 +230,19 @@ def train(args, train_dataset, model, tokenizer):
                         if root
                         else None
                     )
-                    print()
-                    print()
-                    print(gather_list)
                     dist.gather(param.grad, gather_list=gather_list, dst=0)
-                    print(gather_list)
-                    print()
-                    print()
                     aggregated_grads = (
-                        torch.mean(torch.stack(gather_list), dim=0) if root else None
+                        torch.mean(torch.stack(gather_list), dim=0)
+                        if root
+                        else torch.zeros_like(param.grad)
                     )
-                    # aggregated_grads =
-                    # scatter_list = [
-                    #     aggregated_grads for _ in range(dist.get_world_size())
-                    # ]
-                    # else:
-                    #     gather_list = None
-                    # scatter_list = None
-                    # aggregated_grads = torch.zeros_like(input_tensor)
+                    scatter_list = (
+                        [aggregated_grads for _ in range(dist.get_world_size())]
+                        if root
+                        else None
+                    )
 
-                    # if :
-
-                    # else:
+                    print(scatter_list)
                     #     aggregated_grads = None
 
                     # if dist.get_rank() == 0:

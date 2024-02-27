@@ -234,10 +234,11 @@ def train(args, train_dataset, model, tokenizer):
                         aggregated_grads = torch.mean(
                             torch.stack(gathered_grads), dim=0
                         )
+                        for _ in range(dist.get_world_size()):
+                            dist.scatter(aggregated_grads, src=0)
                     else:
                         aggregated_grads = torch.zeros_like(param.grad)
-                    for _ in range(dist.get_world_size()):
-                        dist.scatter(aggregated_grads, src=0)
+
                     param.grad = aggregated_grads
 
                 ##################################################

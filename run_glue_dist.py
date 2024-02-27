@@ -220,6 +220,7 @@ def train(args, train_dataset, model, tokenizer):
                 # TODO(cos598d): perform backward pass here
                 loss.backward()
                 for param in model.parameters():
+                    print(param.grad.size())
                     if dist.get_rank() == 0:
                         print("root")
                         print(param)

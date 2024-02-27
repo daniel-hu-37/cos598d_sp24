@@ -28,7 +28,7 @@ import torch
 
 torch.distributed.init_process_group(
     backend="gloo",
-    init_method="tcp://10.10.1.1:1600",
+    init_method="tcp://10.10.1.1:1601",
     timeout=None,
     world_size=4,
     rank=0,

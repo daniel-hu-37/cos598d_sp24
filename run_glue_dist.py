@@ -220,45 +220,33 @@ def train(args, train_dataset, model, tokenizer):
                 # TODO(cos598d): perform backward pass here
                 loss.backward()
                 for param in model.parameters():
-                    print(param.grad.size())
+                    input_tensor = param.grad
                     if dist.get_rank() == 0:
-                        print("root")
-                        print(param)
-                        print()
-                        # gathered_grads = [
-                        #     torch.zeros_like(param.grad)
-                        #     for _ in range(dist.get_world_size())
-                        # ]
-                        # dist.gather(param.grad, gather_list=gathered_grads, dst=0)
-
-                        # aggregated_grads = torch.mean(
-                        #     torch.stack(gathered_grads), dim=0
-                        # )
-
-                        # scatter_list = [
-                        #     aggregated_grads for _ in range(dist.get_world_size())
-                        # ]
+                        gather_list = [
+                            torch.zeros_like(input_tensor)
+                            for _ in range(dist.get_world_size())
+                        ]
+                        dist.gather(input_tensor, gather_list=gather_list, dst=0)
+                        aggregated_grads = torch.mean(torch.stack(gather_list), dim=0)
+                        scatter_list = [
+                            aggregated_grads for _ in range(dist.get_world_size())
+                        ]
                     else:
-                        print("slave")
-                        print(param)
-                        print()
-                        # gathered_grads = None
-                        # scatter_list = None
-                        # aggregated_grads = torch.zeros_like(param.grad)
+                        gather_list = None
+                        scatter_list = None
+                        aggregated_grads = torch.zeros_like(input_tensor)
 
-                    # if dist.get_rank() == 0:
-                    #     for i in range(dist.get_world_size()):
-                    #         dist.scatter(
-                    #             tensor=aggregated_grads,
-                    #             scatter_list=(
-                    #                 [scatter_list[i]] if dist.get_rank() == 0 else None
-                    #             ),
-                    #             src=0,
-                    #         )
-                    # else:
-                    #     dist.scatter(tensor=aggregated_grads, src=0)
+                    if dist.get_rank() == 0:
+                        for _ in range(dist.get_world_size()):
+                            dist.scatter(
+                                tensor=aggregated_grads,
+                                scatter_list=scatter_list,
+                                src=0,
+                            )
+                    else:
+                        dist.scatter(tensor=aggregated_grads, src=0)
 
-                    # param.grad = aggregated_grads
+                    param.grad = aggregated_grads
 
                 ##################################################
                 torch.nn.utils.clip_grad_norm_(model.parameters(), args.max_grad_norm)

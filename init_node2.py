@@ -15,7 +15,7 @@ def main():
     print("Torch Distributed Available: ", torch.distributed.is_available())
     print()
 
-    init, rank = ("tcp://10.0.0.3:9002", 2)
+    init, rank = ("tcp://10.10.1.3:9002", 2)
 
     try:
         initialize_node(init, rank)

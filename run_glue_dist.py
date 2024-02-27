@@ -220,7 +220,8 @@ def train(args, train_dataset, model, tokenizer):
                 # TODO(cos598d): perform backward pass here
                 loss.backward()
 
-                local = model.parameters().grad
+                local = model.parameters()
+                print(local)
 
                 if dist.get_rank() == 0:
                     gathered = torch.zeros(dist.get_world_size(), dtype=torch.float32)

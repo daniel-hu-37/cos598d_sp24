@@ -221,23 +221,38 @@ def train(args, train_dataset, model, tokenizer):
                 loss.backward()
                 i = 0
                 for param in model.parameters():
-                    if dist.get_rank() == 0:
-                        gather_list = [
+                    root = dist.get_rank() == 0
+                    gather_list = (
+                        [
                             torch.zeros_like(param.grad)
                             for _ in range(dist.get_world_size())
                         ]
-                        # aggregated_grads = torch.mean(torch.stack(gather_list), dim=0)
-                        # scatter_list = [
-                        #     aggregated_grads for _ in range(dist.get_world_size())
-                        # ]
-                    else:
-                        gather_list = None
-                        # scatter_list = None
-                        # aggregated_grads = torch.zeros_like(input_tensor)
+                        if root
+                        else None
+                    )
+                    print()
+                    print()
+                    print(gather_list)
                     dist.gather(param.grad, gather_list=gather_list, dst=0)
-                    if i < 2:
-                        print(param.grad)
-                    i += 1
+                    print(gather_list)
+                    print()
+                    print()
+                    aggregated_grads = (
+                        torch.mean(torch.stack(gather_list), dim=0) if root else None
+                    )
+                    # aggregated_grads =
+                    # scatter_list = [
+                    #     aggregated_grads for _ in range(dist.get_world_size())
+                    # ]
+                    # else:
+                    #     gather_list = None
+                    # scatter_list = None
+                    # aggregated_grads = torch.zeros_like(input_tensor)
+
+                    # if :
+
+                    # else:
+                    #     aggregated_grads = None
 
                     # if dist.get_rank() == 0:
                     #     for _ in range(dist.get_world_size()):

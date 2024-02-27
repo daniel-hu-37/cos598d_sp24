@@ -219,30 +219,26 @@ def train(args, train_dataset, model, tokenizer):
                 ##################################################
                 # TODO(cos598d): perform backward pass here
                 loss.backward()
-                local = model.parameters()
-                named = model.named_parameters()
+                for param in model.parameters():
+                    if dist.get_rank() == 0:
+                        gathered_grads = [
+                            torch.zeros_like(param.grad)
+                            for _ in range(dist.get_world_size())
+                        ]
+                    else:
+                        gathered_grads = None
 
-                print()
-                print()
-                print(local)
-                print()
-                print()
-                print(named)
-                print()
-                print()
+                    dist.gather(param.grad, gather_list=gathered_grads, dst=0)
 
-                if dist.get_rank() == 0:
-                    gathered = torch.zeros(dist.get_world_size(), dtype=torch.float32)
-                else:
-                    gathered = torch.tensor([], dtype=torch.float32)
-
-                dist.gather(local, gathered, dst=0)  # gather
-
-                if dist.get_rank() == 0:
-                    total_sum = gathered.mean()
-                    print("Total sum:", total_sum)
-
-                dist.scatter(gathered, gathered, src=0)  # scatter
+                    if dist.get_rank() == 0:
+                        aggregated_grads = torch.mean(
+                            torch.stack(gathered_grads), dim=0
+                        )
+                    else:
+                        aggregated_grads = torch.zeros_like(param.grad)
+                    for _ in range(dist.get_world_size()):
+                        dist.scatter(aggregated_grads, src=0)
+                    param.grad = aggregated_grads
 
                 ##################################################
                 torch.nn.utils.clip_grad_norm_(model.parameters(), args.max_grad_norm)

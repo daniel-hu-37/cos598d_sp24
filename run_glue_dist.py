@@ -219,7 +219,6 @@ def train(args, train_dataset, model, tokenizer):
                 ##################################################
                 # TODO(cos598d): perform backward pass here
                 loss.backward()
-                i = 0
                 for param in model.parameters():
                     root = dist.get_rank() == 0
                     gather_list = (
@@ -241,21 +240,8 @@ def train(args, train_dataset, model, tokenizer):
                         if root
                         else None
                     )
-
-                    print(scatter_list)
-                    #     aggregated_grads = None
-
-                    # if dist.get_rank() == 0:
-                    #     for _ in range(dist.get_world_size()):
-                    #         dist.scatter(
-                    #             tensor=aggregated_grads,
-                    #             scatter_list=scatter_list,
-                    #             src=0,
-                    #         )
-                    # else:
-                    #     dist.scatter(tensor=aggregated_grads, src=0)
-
-                    # param.grad = aggregated_grads
+                    dist.scatter(aggregated_grads, scatter_list, src=0)
+                    param.grad = aggregated_grads
 
                 ##################################################
                 torch.nn.utils.clip_grad_norm_(model.parameters(), args.max_grad_norm)

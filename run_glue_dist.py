@@ -235,7 +235,7 @@ def train(args, train_dataset, model, tokenizer):
                             torch.stack(gathered_grads), dim=0
                         )
                         for _ in range(dist.get_world_size()):
-                            dist.scatter(aggregated_grads, src=0)
+                            dist.scatter(aggregated_grads, aggregated_grads, src=0)
                     else:
                         aggregated_grads = torch.zeros_like(param.grad)
 

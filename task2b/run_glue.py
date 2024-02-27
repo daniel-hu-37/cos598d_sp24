@@ -14,8 +14,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """ Finetuning the library models for sequence classification on GLUE (Bert, XLM, XLNet, RoBERTa)."""
-
 from __future__ import absolute_import, division, print_function
+import sys
+from pathlib import Path
+
+current_script_path = Path(__file__).absolute()
+main_dir_path = current_script_path.parent.parent
+sys.path.append(str(main_dir_path))
 
 import argparse
 import glob
@@ -76,16 +81,16 @@ MODEL_CLASSES = {
 }
 
 
-def init_process(rank):
+def init_process(rank, ip, port, size):
     print("********************")
     print("Initializing with rank: ", rank)
     print("********************")
     print()
     torch.distributed.init_process_group(
         backend="gloo",
-        init_method="tcp://10.10.1.1:1601",
+        init_method="tcp://" + ip + ":" + str(port),
         timeout=None,
-        world_size=4,
+        world_size=size,
         rank=rank,
         store=None,
         group_name="",
@@ -598,6 +603,24 @@ def main():
         default=-1,
         help="For distributed training: local_rank. If single-node training, local_rank defaults to -1.",
     )
+
+    parser.add_argument(
+        "--master_ip",
+        type=str,
+        help="IP Address",
+    )
+
+    parser.add_argument(
+        "--master_port",
+        type=int,
+        help="Port",
+    )
+
+    parser.add_argument(
+        "--world_size",
+        type=int,
+        help="World Size",
+    )
     args = parser.parse_args()
 
     if (
@@ -612,7 +635,7 @@ def main():
             )
         )
 
-    init_process(args.local_rank)
+    init_process(args.local_rank, args.master_ip, args.master_port, args.world_size)
     print(torch.distributed.get_rank())
 
     # set up (distributed) training

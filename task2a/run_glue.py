@@ -246,7 +246,7 @@ def train(args, train_dataset, model, tokenizer):
                         else None
                     )
                     dist.scatter(aggregated_grads, scatter_list, src=0)
-                    param.grad = aggregated_grads
+                    param.grad.data = aggregated_grads
 
                 ##################################################
                 torch.nn.utils.clip_grad_norm_(model.parameters(), args.max_grad_norm)

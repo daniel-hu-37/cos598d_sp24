@@ -1,4 +1,4 @@
-export GLUE_DIR=glue_data
+export GLUE_DIR=$HOME/glue_data
 export TASK_NAME=RTE
 
 python3 run_glue_skeleton.py \

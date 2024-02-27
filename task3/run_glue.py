@@ -667,14 +667,13 @@ def main():
     # TODO(cos598d): load the model using from_pretrained. Remember to pass in `config` as an argument.
     # If you pass in args.model_name_or_path (e.g. "bert-base-cased"), the model weights file will be downloaded from HuggingFace.
     model = model_class.from_pretrained(args.model_name_or_path, config=config)
-    model.to("cpu")
-    model = DDP(model)
 
     ##################################################
-    print("pre barrier")
     if args.local_rank == 0:
         torch.distributed.barrier()  # Make sure only the first process in distributed training will download model & vocab
-    print("post barrier")
+
+    model.to(args.device)
+    model = DDP(model)
 
     logger.info("Training/evaluation parameters %s", args)
 

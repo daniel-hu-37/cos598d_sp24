@@ -1,4 +1,9 @@
 import torch
 import torch.distributed as dist
 
-dist.init_process_group("gloo", rank=0, world_size=4)
+rank = dist.get_rank()
+group = dist.group.WORLD
+if rank == 0:
+    print("Root")
+else:
+    print("Worker")

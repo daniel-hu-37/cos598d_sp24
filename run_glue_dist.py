@@ -77,6 +77,10 @@ MODEL_CLASSES = {
 
 
 def init_process(rank):
+    print("********************")
+    print("Initializing with rank: ", rank)
+    print("********************")
+    print()
     torch.distributed.init_process_group(
         backend="gloo",
         init_method="tcp://10.10.1.1:1601",
@@ -87,6 +91,7 @@ def init_process(rank):
         group_name="",
         pg_options=None,
     )
+    print("Initialized!")
 
 
 def set_seed(args):

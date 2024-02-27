@@ -14,6 +14,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """ Finetuning the library models for sequence classification on GLUE (Bert, XLM, XLNet, RoBERTa)."""
+import sys
+from pathlib import Path
+
+# Get the directory of the current script
+current_script_path = Path(__file__).absolute()  # Path to script_in_subdir.py
+
+# Get the MAIN directory path by going up two levels
+main_dir_path = current_script_path.parent.parent  # Path to MAIN/
+
+# Add the MAIN directory to sys.path
+sys.path.append(str(main_dir_path))
+
 
 from __future__ import absolute_import, division, print_function
 

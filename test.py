@@ -5,7 +5,7 @@ torch.distributed.init_process_group(
     backend="gloo",
     init_method="tcp://10.10.1.1:9002",
     world_size=4,
-    rank=1,
+    rank=2,
 )
 
 rank = dist.get_rank()

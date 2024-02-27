@@ -226,7 +226,7 @@ def train(args, train_dataset, model, tokenizer):
                 loss.backward()
                 for param in model.parameters():
                     dist.all_reduce(param.grad.data, op=dist.ReduceOp.SUM)
-                    param.grad.data /= dist.world_size()
+                    param.grad.data /= dist.get_world_size()
 
                 ##################################################
                 torch.nn.utils.clip_grad_norm_(model.parameters(), args.max_grad_norm)

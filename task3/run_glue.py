@@ -225,29 +225,6 @@ def train(args, train_dataset, model, tokenizer):
                 ##################################################
                 # TODO(cos598d): perform backward pass here
                 loss.backward()
-                for param in model.parameters():
-                    root = dist.get_rank() == 0
-                    gather_list = (
-                        [
-                            torch.zeros_like(param.grad)
-                            for _ in range(dist.get_world_size())
-                        ]
-                        if root
-                        else None
-                    )
-                    dist.gather(param.grad, gather_list=gather_list, dst=0)
-                    aggregated_grads = (
-                        torch.mean(torch.stack(gather_list), dim=0)
-                        if root
-                        else torch.zeros_like(param.grad)
-                    )
-                    scatter_list = (
-                        [aggregated_grads for _ in range(dist.get_world_size())]
-                        if root
-                        else None
-                    )
-                    dist.scatter(aggregated_grads, scatter_list, src=0)
-                    param.grad = aggregated_grads
 
                 ##################################################
                 torch.nn.utils.clip_grad_norm_(model.parameters(), args.max_grad_norm)

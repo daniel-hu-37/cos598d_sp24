@@ -31,7 +31,7 @@ torch.distributed.init_process_group(
     init_method="tcp://10.10.1.1:1601",
     timeout=None,
     world_size=4,
-    rank=0,
+    rank=1,
     store=None,
     group_name="",
     pg_options=None,

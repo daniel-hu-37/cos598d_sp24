@@ -667,8 +667,8 @@ def main():
     # TODO(cos598d): load the model using from_pretrained. Remember to pass in `config` as an argument.
     # If you pass in args.model_name_or_path (e.g. "bert-base-cased"), the model weights file will be downloaded from HuggingFace.
     model = model_class.from_pretrained(args.model_name_or_path, config=config)
-    model.to(args.device)
-    model = DDP(model)
+    # model.to(args.device)
+    # model = DDP(model)
 
     ##################################################
 

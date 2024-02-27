@@ -225,19 +225,31 @@ def train(args, train_dataset, model, tokenizer):
                             torch.zeros_like(param.grad)
                             for _ in range(dist.get_world_size())
                         ]
-                    else:
-                        gathered_grads = None
+                        dist.gather(param.grad, gather_list=gathered_grads, dst=0)
 
-                    dist.gather(param.grad, gather_list=gathered_grads, dst=0)
-
-                    if dist.get_rank() == 0:
                         aggregated_grads = torch.mean(
                             torch.stack(gathered_grads), dim=0
                         )
-                        for _ in range(dist.get_world_size()):
-                            dist.scatter(aggregated_grads, aggregated_grads, src=0)
+
+                        scatter_list = [
+                            aggregated_grads for _ in range(dist.get_world_size())
+                        ]
                     else:
+                        gathered_grads = None
+                        scatter_list = None
                         aggregated_grads = torch.zeros_like(param.grad)
+
+                    if dist.get_rank() == 0:
+                        for i in range(dist.get_world_size()):
+                            dist.scatter(
+                                tensor=aggregated_grads,
+                                scatter_list=(
+                                    [scatter_list[i]] if dist.get_rank() == 0 else None
+                                ),
+                                src=0,
+                            )
+                    else:
+                        dist.scatter(tensor=aggregated_grads, src=0)
 
                     param.grad = aggregated_grads
 
